@@ -1,0 +1,29 @@
+window.React = require("react")
+window.Pixi = require("pixi.js")
+
+window.Loop = require("<scripts>/utilities/Loop")
+window.Input = require("<scripts>/utilities/Input")
+
+window.WIDTH = 16
+window.HEIGHT = 12
+
+var FrameView = require("<scripts>/views/FrameView")
+
+var GameView = React.createClass({
+    render: function() {
+        return (
+            <FrameView aspect-ratio={WIDTH + "x" + HEIGHT}>
+                <a href="https://twitter.com/hashtag/CommunityJam15">
+                    Hello #CommunityJam15!
+                </a>
+            </FrameView>
+        )
+    },
+    componentDidMount: function() {
+        Loop(function(tick) {
+            console.log(tick)
+        }.bind(this))
+    }
+})
+
+React.render(<GameView/>, document.body)

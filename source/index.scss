@@ -1,0 +1,21 @@
+@import "./styles/Fonts.scss";
+@import "./styles/Defaults.scss";
+@import "./styles/views/FrameView.scss";
+
+html
+{
+    font-family: goldfish;
+    background-color: #111;
+}
+
+#frame-view
+{
+    color: #111;
+	background-color: #eee;
+}
+
+canvas
+{
+    background-color: #293833;
+    image-rendering: pixelated;
+}
