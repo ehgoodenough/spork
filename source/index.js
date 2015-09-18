@@ -4,8 +4,8 @@ window.Pixi = require("pixi.js")
 window.Loop = require("<scripts>/utilities/Loop")
 window.Input = require("<scripts>/utilities/Input")
 
-window.WIDTH = 16
-window.HEIGHT = 12
+window.WIDTH = 20
+window.HEIGHT = 15
 
 var FrameView = require("<scripts>/views/FrameView")
 
@@ -21,7 +21,7 @@ var GameView = React.createClass({
     },
     componentDidMount: function() {
         Loop(function(tick) {
-            console.log(tick)
+            //console.log(tick)
         }.bind(this))
     }
 })

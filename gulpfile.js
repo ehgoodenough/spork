@@ -121,7 +121,7 @@ gulp.task("server", function() {
     gulp_connect.server({
         root: __dirname + "/build",
         livereload: true,
-        port: 1234
+        port: 8080
     })
 })
 
