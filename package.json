@@ -1,10 +1,10 @@
 {
-  "name": "spork",
+  "name": "enchiridion",
   "version": "0.0.0",
   "description": "A game for Indiecade's Community Jam 2015.",
   "repository": {
     "type": "git",
-    "url": "http://github.com/ehgoodenough/spork"
+    "url": "http://github.com/ehgoodenough/enchiridion"
   },
   "dependencies": {
     "pixi.js": "^3.0.7",
@@ -34,6 +34,6 @@
     "yargs": "^3.5.3"
   },
   "scripts": {
-      "build": "rm -r ./build; gulp --minify"
+    "build": "gulp --minify"
   }
 }
