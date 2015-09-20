@@ -21,13 +21,15 @@ var HeroView = require("<scripts>/views/HeroView")
 var FrameView = require("<scripts>/views/FrameView")
 var CameraView = require("<scripts>/views/CameraView")
 var WorldChunkView = require("<scripts>/views/WorldChunkView")
+var EditorCursorView = require("<scripts>/views/EditorCursorView")
 
 var game = {
     "mode": "play",
     "world": {
         "chunks": {
             "0x0": {
-                "timestamp": Date.now(),
+                "rendered": Date.now(),
+                "position": {"x": 0, "y": 0},
                 "tiles": {
                     "0x0": {
                         "color": "#B97A57",
@@ -37,16 +39,42 @@ var game = {
                         "color": "#B97A57",
                         "position": {"x": 1, "y": 1},
                     },
-                }
-            }
-        }
+                },
+            },
+            "-1x0": {
+                "rendered": Date.now(),
+                "position": {"x": -1, "y": 0},
+                "tiles": {
+                    "4x4": {
+                        "color": "#B97A57",
+                        "position": {"x": 4, "y": 4},
+                    },
+                    "6x6": {
+                        "color": "#B97A57",
+                        "position": {"x": 6, "y": 6},
+                    },
+                },
+            },
+        },
     },
     "hero": {
         "width": 8,
         "height": 8,
-        "position": {"x": 16, "y": 16},
-        "timestamp": Date.now(),
-    }
+        "position": {
+            "x": 16,
+            "y": 16,
+        },
+    },
+    "editor": {
+        "cursor": {
+            "scale": 2,
+            "position": {
+                "x": 0,
+                "y": 0,
+            },
+            "movement": {}
+        },
+    },
 }
 
 var GameView = React.createClass({
@@ -55,38 +83,84 @@ var GameView = React.createClass({
             <FrameView aspect-ratio={WIDTH + "x" + HEIGHT}>
                 <CameraView entity={game.hero}>
                     <WorldChunkView chunk={game.world.chunks["0x0"]}/>
+                    <WorldChunkView chunk={game.world.chunks["-1x0"]}/>
                     <HeroView entity={game.hero}/>
+                    <EditorCursorView entity={game.editor.cursor}/>
                 </CameraView>
             </FrameView>
         )
     },
     componentDidMount: function() {
         Loop(function(tick) {
-            if(Input.isJustDown("<space>")) {
+            if(Input.isJustDown("\\")) {
                 if(game.mode == "play") {
-                    console.log("Activating EditMode")
                     game.mode = "edit"
+                    game.editor.cursor.position.x = Math.round((game.hero.position.x - (game.hero.width / 2)) / 4) * 4
+                    game.editor.cursor.position.y = Math.round((game.hero.position.y - (game.hero.width / 2)) / 4) * 4
                 } else if(game.mode == "edit") {
-                    console.log("Activating PlayMode")
                     game.mode = "play"
                 }
             }
             if(game.mode == "play") {
-                if(Input.isDown("W")) {
+                if(Input.isDown("W")
+                || Input.isDown("<up>")) {
                     game.hero.position.y -= 1
-                    game.hero.timestamp = Date.now()
-                } if(Input.isDown("S")) {
+                } if(Input.isDown("S")
+                || Input.isDown("<down>")) {
                     game.hero.position.y += 1
-                    game.hero.timestamp = Date.now()
-                } if(Input.isDown("A")) {
+                } if(Input.isDown("A")
+                || Input.isDown("<left>")) {
                     game.hero.position.x -= 1
-                    game.hero.timestamp = Date.now()
-                } if(Input.isDown("D")) {
+                } if(Input.isDown("D")
+                || Input.isDown("<right>")) {
                     game.hero.position.x += 1
-                    game.hero.timestamp = Date.now()
                 }
             } else if(game.mode == "edit") {
-                //?!
+                if(Input.isJustDown("W")
+                || Input.isJustDown("<up>")) {
+                    game.editor.cursor.movement.y = -0.1
+                    game.editor.cursor.position.y -= 4
+                } else if(Input.isDown("W")
+                || Input.isDown("<up>")) {
+                    game.editor.cursor.movement.y += tick
+                    if(game.editor.cursor.movement.y > 0.1) {
+                        game.editor.cursor.movement.y -= 0.1
+                        game.editor.cursor.position.y -= 4
+                    }
+                } if(Input.isJustDown("S")
+                || Input.isJustDown("<down>")) {
+                    game.editor.cursor.movement.y = -0.1
+                    game.editor.cursor.position.y += 4
+                } else if(Input.isDown("S")
+                || Input.isDown("<down>")) {
+                    game.editor.cursor.movement.y += tick
+                    if(game.editor.cursor.movement.y > 0.1) {
+                        game.editor.cursor.movement.y -= 0.1
+                        game.editor.cursor.position.y += 4
+                    }
+                } if(Input.isJustDown("A")
+                || Input.isJustDown("<left>")) {
+                    game.editor.cursor.movement.x = -0.1
+                    game.editor.cursor.position.x -= 4
+                } else if(Input.isDown("A")
+                || Input.isDown("<left>")) {
+                    game.editor.cursor.movement.x += tick
+                    if(game.editor.cursor.movement.x > 0.1) {
+                        game.editor.cursor.movement.x -= 0.1
+                        game.editor.cursor.position.x -= 4
+                    }
+                } if(Input.isJustDown("D")
+                || Input.isJustDown("<right>")) {
+                    game.editor.cursor.movement.x = -0.1
+                    game.editor.cursor.position.x += 4
+                } else if(Input.isDown("D")
+                || Input.isDown("<right>")) {
+                    game.editor.cursor.movement.x += tick
+                    if(game.editor.cursor.movement.x > 0.1) {
+                        game.editor.cursor.movement.x -= 0.1
+                        game.editor.cursor.position.x += 4
+                    }
+                }
             }
             this.forceUpdate()
         }.bind(this))

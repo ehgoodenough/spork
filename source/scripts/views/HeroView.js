@@ -13,17 +13,6 @@ var HeroView = React.createClass({
             backgroundColor: COLORS["green"],
             position: "absolute",
         }
-    },
-    componentDidMount: function() {
-        this.timestamp = this.props.entity.timestamp
-        console.log("Rendering HeroView", this.timestamp)
-    },
-    shouldComponentUpdate: function(props) {
-        return this.timestamp != props.entity.timestamp
-    },
-    componentDidUpdate: function() {
-        this.timestamp = this.props.entity.timestamp
-        console.log("Rendering HeroView", this.timestamp)
     }
 })
 

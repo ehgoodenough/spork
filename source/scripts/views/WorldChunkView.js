@@ -2,9 +2,18 @@ var WorldChunkView = React.createClass({
     render: function() {
         return (
             <canvas ref="canvas"
-                width={WIDTH} height={HEIGHT}
-                style={{width: WIDTH + "em", height: HEIGHT + "em"}}/>
+                style={this.renderStyle()}
+                width={WIDTH} height={HEIGHT}/>
         )
+    },
+    renderStyle: function() {
+        return {
+            width: WIDTH + "em",
+            height: HEIGHT + "em",
+            top: this.props.chunk.position.y * HEIGHT + "em",
+            left: this.props.chunk.position.x * WIDTH + "em",
+            position: "absolute",
+        }
     },
     renderCanvas: function() {
         var canvas = this.refs.canvas.getDOMNode().getContext("2d")
@@ -17,16 +26,16 @@ var WorldChunkView = React.createClass({
         }
     },
     componentDidMount: function() {
-        this.timestamp = this.props.chunk.timestamp
-        console.log("Rendering WorldChunkView", this.timestamp)
+        this.rendered = this.props.chunk.rendered
+        console.log("Rendering WorldChunkView", this.rendered)
         this.renderCanvas()
     },
     shouldComponentUpdate: function(props) {
-        return this.timestamp != props.chunk.timestamp
+        return this.rendered != props.chunk.rendered
     },
     componentDidUpdate: function() {
-        this.timestamp = this.props.chunk.timestamp
-        console.log("Rendering WorldChunkView", this.timestamp)
+        this.rendered = this.props.chunk.rendered
+        console.log("Rendering WorldChunkView", this.rendered)
         this.renderCanvas()
     }
 })
