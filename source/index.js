@@ -6,6 +6,7 @@ window.Input = require("<scripts>/utilities/Input")
 
 window.WIDTH = 128
 window.HEIGHT = 96
+window.TILE = 8
 window.COLORS = {
     "brown1": "#EFE4B0",
     "brown2": "#B97A57",
@@ -18,42 +19,41 @@ window.COLORS = {
 }
 
 var HeroView = require("<scripts>/views/HeroView")
-var FrameView = require("<scripts>/views/FrameView")
-var CameraView = require("<scripts>/views/CameraView")
+var WorldView = require("<scripts>/views/WorldView")
 var WorldChunkView = require("<scripts>/views/WorldChunkView")
+var FrameView = require("<scripts>/views/FrameView")
 var EditorCursorView = require("<scripts>/views/EditorCursorView")
+var CameraView = require("<scripts>/views/CameraView")
 
 var game = {
     "mode": "play",
     "world": {
+        "tiles": {
+            "0x0": {
+                "color": "#B97A57",
+                "position": {"tx": 0, "ty": 0},
+            },
+            "1x1": {
+                "color": "#B97A57",
+                "position": {"tx": 1, "ty": 1},
+            },
+            "4x4": {
+                "color": "#B97A57",
+                "position": {"tx": 4, "ty": 4},
+            },
+            "6x6": {
+                "color": "#B97A57",
+                "position": {"tx": 6, "ty": 6},
+            },
+        },
         "chunks": {
             "0x0": {
                 "rendered": Date.now(),
                 "position": {"x": 0, "y": 0},
-                "tiles": {
-                    "0x0": {
-                        "color": "#B97A57",
-                        "position": {"x": 0, "y": 0},
-                    },
-                    "1x1": {
-                        "color": "#B97A57",
-                        "position": {"x": 1, "y": 1},
-                    },
-                },
             },
             "-1x0": {
                 "rendered": Date.now(),
                 "position": {"x": -1, "y": 0},
-                "tiles": {
-                    "4x4": {
-                        "color": "#B97A57",
-                        "position": {"x": 4, "y": 4},
-                    },
-                    "6x6": {
-                        "color": "#B97A57",
-                        "position": {"x": 6, "y": 6},
-                    },
-                },
             },
         },
     },
@@ -67,36 +67,50 @@ var game = {
     },
     "editor": {
         "cursor": {
-            "scale": 2,
+            "scale": 1,
             "position": {
+                "tx": 0,
+                "ty": 0,
+            },
+            "movement": {
                 "x": 0,
                 "y": 0,
-            },
-            "movement": {}
+            }
         },
     },
 }
 
 var GameView = React.createClass({
     render: function() {
-        return (
-            <FrameView aspect-ratio={WIDTH + "x" + HEIGHT}>
-                <CameraView entity={game.hero}>
-                    <WorldChunkView chunk={game.world.chunks["0x0"]}/>
-                    <WorldChunkView chunk={game.world.chunks["-1x0"]}/>
-                    <HeroView entity={game.hero}/>
-                    <EditorCursorView entity={game.editor.cursor}/>
-                </CameraView>
-            </FrameView>
-        )
+        if(game.mode == "play") {
+            return (
+                <FrameView aspect-ratio={WIDTH + "x" + HEIGHT}>
+                    <CameraView entity={game.hero}>
+                        <WorldView world={game.world}/>
+                        <HeroView entity={game.hero}/>
+                    </CameraView>
+                </FrameView>
+            )
+        } else if(game.mode == "edit") {
+            return (
+                <FrameView aspect-ratio={WIDTH + "x" + HEIGHT}>
+                    <CameraView entity={game.hero}>
+                        <WorldView world={game.world}/>
+                        <HeroView entity={game.hero}/>
+                        <EditorCursorView entity={game.editor.cursor}/>
+                    </CameraView>
+                </FrameView>
+            )
+        }
     },
     componentDidMount: function() {
         Loop(function(tick) {
-            if(Input.isJustDown("\\")) {
+            if(Input.isJustDown("I")) {
                 if(game.mode == "play") {
                     game.mode = "edit"
-                    game.editor.cursor.position.x = Math.round((game.hero.position.x - (game.hero.width / 2)) / 4) * 4
-                    game.editor.cursor.position.y = Math.round((game.hero.position.y - (game.hero.width / 2)) / 4) * 4
+                    // todo: do not reposition the cursor if it is already on the screen
+                    game.editor.cursor.position.tx = Math.round((game.hero.position.x - (game.hero.width / 2)) / TILE)
+                    game.editor.cursor.position.ty = Math.round((game.hero.position.y - (game.hero.width / 2)) / TILE)
                 } else if(game.mode == "edit") {
                     game.mode = "play"
                 }
@@ -116,49 +130,81 @@ var GameView = React.createClass({
                     game.hero.position.x += 1
                 }
             } else if(game.mode == "edit") {
-                if(Input.isJustDown("W")
-                || Input.isJustDown("<up>")) {
-                    game.editor.cursor.movement.y = -0.1
-                    game.editor.cursor.position.y -= 4
-                } else if(Input.isDown("W")
-                || Input.isDown("<up>")) {
-                    game.editor.cursor.movement.y += tick
-                    if(game.editor.cursor.movement.y > 0.1) {
-                        game.editor.cursor.movement.y -= 0.1
-                        game.editor.cursor.position.y -= 4
-                    }
-                } if(Input.isJustDown("S")
-                || Input.isJustDown("<down>")) {
-                    game.editor.cursor.movement.y = -0.1
-                    game.editor.cursor.position.y += 4
-                } else if(Input.isDown("S")
-                || Input.isDown("<down>")) {
-                    game.editor.cursor.movement.y += tick
-                    if(game.editor.cursor.movement.y > 0.1) {
-                        game.editor.cursor.movement.y -= 0.1
-                        game.editor.cursor.position.y += 4
-                    }
-                } if(Input.isJustDown("A")
-                || Input.isJustDown("<left>")) {
-                    game.editor.cursor.movement.x = -0.1
-                    game.editor.cursor.position.x -= 4
-                } else if(Input.isDown("A")
-                || Input.isDown("<left>")) {
-                    game.editor.cursor.movement.x += tick
-                    if(game.editor.cursor.movement.x > 0.1) {
-                        game.editor.cursor.movement.x -= 0.1
-                        game.editor.cursor.position.x -= 4
-                    }
-                } if(Input.isJustDown("D")
-                || Input.isJustDown("<right>")) {
-                    game.editor.cursor.movement.x = -0.1
-                    game.editor.cursor.position.x += 4
-                } else if(Input.isDown("D")
-                || Input.isDown("<right>")) {
-                    game.editor.cursor.movement.x += tick
-                    if(game.editor.cursor.movement.x > 0.1) {
-                        game.editor.cursor.movement.x -= 0.1
-                        game.editor.cursor.position.x += 4
+                if(Input.isDown("<shift>")) {
+                    // shifting
+                } else {
+                    var SPEED = 0.1
+                    if(Input.isJustDown("W")
+                    || Input.isJustDown("<up>")) {
+                        game.editor.cursor.movement.y = -SPEED
+                        if(game.editor.cursor.position.ty - 1 >= 0) {
+                            game.editor.cursor.position.ty -= 1
+                        }
+                    } else if(Input.isDown("W")
+                    || Input.isDown("<up>")) {
+                        game.editor.cursor.movement.y += tick
+                        if(game.editor.cursor.movement.y > SPEED) {
+                            game.editor.cursor.movement.y -= SPEED
+                            if(game.editor.cursor.position.ty - 1 >= 0) {
+                                game.editor.cursor.position.ty -= 1
+                            }
+                        }
+                    } if(Input.isJustDown("S")
+                    || Input.isJustDown("<down>")) {
+                        game.editor.cursor.movement.y = -SPEED
+                        if(game.editor.cursor.position.ty + 1 < HEIGHT / TILE) {
+                            game.editor.cursor.position.ty += 1
+                        }
+                    } else if(Input.isDown("S")
+                    || Input.isDown("<down>")) {
+                        game.editor.cursor.movement.y += tick
+                        if(game.editor.cursor.movement.y > SPEED) {
+                            game.editor.cursor.movement.y -= SPEED
+                            if(game.editor.cursor.position.ty + 1 < HEIGHT / TILE) {
+                                game.editor.cursor.position.ty += 1
+                            }
+                        }
+                    } if(Input.isJustDown("A")
+                    || Input.isJustDown("<left>")) {
+                        game.editor.cursor.movement.x = -SPEED
+                        if(game.editor.cursor.position.tx - 1 >= 0) {
+                            game.editor.cursor.position.tx -= 1
+                        }
+                    } else if(Input.isDown("A")
+                    || Input.isDown("<left>")) {
+                        game.editor.cursor.movement.x += tick
+                        if(game.editor.cursor.movement.x > SPEED) {
+                            game.editor.cursor.movement.x -= SPEED
+                            if(game.editor.cursor.position.tx - 1 >= 0) {
+                                game.editor.cursor.position.tx -= 1
+                            }
+                        }
+                    } if(Input.isJustDown("D")
+                    || Input.isJustDown("<right>")) {
+                        game.editor.cursor.movement.x = -SPEED
+                        if(game.editor.cursor.position.tx + 1 < WIDTH / TILE) {
+                            game.editor.cursor.position.tx += 1
+                        }
+                    } else if(Input.isDown("D")
+                    || Input.isDown("<right>")) {
+                        game.editor.cursor.movement.x += tick
+                        if(game.editor.cursor.movement.x > SPEED) {
+                            game.editor.cursor.movement.x -= SPEED
+                            if(game.editor.cursor.position.tx + 1 < WIDTH / TILE) {
+                                game.editor.cursor.position.tx += 1
+                            }
+                        }
+                    } if(Input.isDown("<space>")) {
+                        var tx = game.editor.cursor.position.tx
+                        var ty = game.editor.cursor.position.ty
+                        for(var txi = tx; txi < tx + game.editor.cursor.scale; txi++) {
+                            for(var tyi = ty; tyi < ty + game.editor.cursor.scale; tyi++) {
+                                game.world.tiles[txi + "x" + tyi] = {
+                                    "position": {"tx": txi, "ty": tyi},
+                                    "color": "#B97A57",
+                                }
+                            }
+                        }
                     }
                 }
             }

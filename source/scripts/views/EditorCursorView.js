@@ -7,10 +7,10 @@ var EditorCursorView = React.createClass({
     renderStyle: function() {
         return {
             position: "absolute",
-            width: this.props.entity.scale * 4 + "em",
-            height: this.props.entity.scale * 4 + "em",
-            top: (Math.round(this.props.entity.position.y / 4) * 4) + "em",
-            left: (Math.round(this.props.entity.position.x / 4) * 4) + "em",
+            width: this.props.entity.scale * TILE + "em",
+            height: this.props.entity.scale * TILE + "em",
+            top: this.props.entity.position.ty * TILE + "em",
+            left: this.props.entity.position.tx * TILE + "em",
             border: "1em dashed #111",
         }
     }

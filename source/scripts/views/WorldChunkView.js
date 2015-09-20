@@ -18,11 +18,11 @@ var WorldChunkView = React.createClass({
     renderCanvas: function() {
         var canvas = this.refs.canvas.getDOMNode().getContext("2d")
         canvas.fillStyle = "#EFE4B0"
-        canvas.fillRect(0, 0, WIDTH * 4, HEIGHT * 4)
+        canvas.fillRect(0, 0, WIDTH * TILE, HEIGHT * TILE)
         for(var coords in this.props.chunk.tiles) {
             var tile = this.props.chunk.tiles[coords]
             canvas.fillStyle = tile.color
-            canvas.fillRect(tile.position.x * 4, tile.position.y * 4, 4, 4)
+            canvas.fillRect(tile.position.x * TILE, tile.position.y * TILE, TILE, TILE)
         }
     },
     componentDidMount: function() {
