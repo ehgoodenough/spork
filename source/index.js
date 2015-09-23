@@ -7,6 +7,8 @@ window.Input = require("<scripts>/utilities/Input")
 window.WIDTH = 128
 window.HEIGHT = 96
 window.TILE = 8
+window.TWIDTH = WIDTH / TILE
+window.THEIGHT = HEIGHT / TILE
 window.COLORS = {
     "brown1": "#EFE4B0",
     "brown2": "#B97A57",
@@ -17,6 +19,199 @@ window.COLORS = {
     "white": "#FFFFFF",
     "black": "#111111",
 }
+window.WORLD = {
+    "tiles": {
+        "6x6":{
+            "chunk": 3,
+            "position":{
+                "tx":6,
+                "ty":6
+            },
+            "color":COLORS.blue,
+        },
+        "5x5":{
+            "chunk": 3,
+            "position":{
+                "tx":5,
+                "ty":5
+            },
+            "color":COLORS.blue,
+        },
+        "4x5":{
+            "chunk": 3,
+            "position":{
+                "tx":4,
+                "ty":5
+            },
+            "color":COLORS.blue,
+        },
+        "5x6":{
+            "chunk": 3,
+            "position":{
+                "tx":5,
+                "ty":6
+            },
+            "color":COLORS.blue,
+        },
+        "4x6":{
+            "chunk": 3,
+            "position":{
+                "tx":4,
+                "ty":6
+            },
+            "color":COLORS.blue,
+        },
+        "5x4":{
+            "chunk": 3,
+            "position":{
+                "tx":5,
+                "ty":4
+            },
+            "color":COLORS.blue,
+        },
+        "6x4":{
+            "chunk": 3,
+            "position":{
+                "tx":6,
+                "ty":4
+            },
+            "color":COLORS.blue,
+        },
+        "6x5":{
+            "chunk": 3,
+            "position":{
+                "tx":6,
+                "ty":5
+            },
+            "color":COLORS.blue,
+        },
+
+        "4x4":{
+            "chunk": 2,
+            "color":COLORS.brown2,
+            "position":{
+                "tx":4,
+                "ty":4
+            }
+        },
+        "3x4":{
+            "chunk": 2,
+            "position":{
+                "tx":3,
+                "ty":4
+            },"color":COLORS.brown2
+        },
+        "3x3":{
+            "chunk": 2,
+            "position":{
+                "tx":3,
+                "ty":3
+            },"color":COLORS.brown2,
+        },
+        "3x2":{
+            "chunk": 2,
+            "position":{
+                "tx":3,
+                "ty":2
+            },"color":COLORS.brown2,
+        },
+        "2x2":{
+            "chunk": 2,
+            "position":{
+                "tx":2,
+                "ty":2
+            },"color":COLORS.brown2,
+        },
+        "2x3":{
+            "chunk": 2,
+            "position":{
+                "tx":2,
+                "ty":3
+            },"color":COLORS.brown2,
+        },
+        "2x4":{
+            "chunk": 2,
+            "position":{
+                "tx":2,
+                "ty":4
+            },"color":COLORS.brown2,
+        },
+        "4x3":{
+            "chunk": 2,
+            "position":{
+                "tx":4,
+                "ty":3
+            },"color":COLORS.brown2,
+        },
+        "4x2":{
+            "chunk": 2,
+            "position":{
+                "tx":4,
+                "ty":2
+            },"color":COLORS.brown2,
+        },
+
+
+        "1x2":{
+            "chunk": 1,
+            "position":{
+                "tx":1,
+                "ty":2
+            },"color":COLORS.blue,
+        },
+        "0x2":{
+            "chunk": 1,
+            "position":{
+                "tx":0,
+                "ty":2
+            },"color":COLORS.blue,
+        },
+        "0x1":{
+            "chunk": 1,
+            "position":{
+                "tx":0,
+                "ty":1
+            },"color":COLORS.blue,
+        },
+        "1x0":{
+            "chunk": 1,
+            "position":{
+                "tx":1,
+                "ty":0
+            },"color":COLORS.blue,
+        },
+        "2x0":{
+            "chunk": 1,
+            "position":{
+                "tx":2,
+                "ty":0
+            },"color":COLORS.blue,
+        },
+        "2x1":{
+            "chunk": 1,
+            "position":{
+                "tx":2,
+                "ty":1
+            },"color":COLORS.blue,
+        },
+        "0x0":{
+            "chunk": 1,
+            "position":{
+                "tx":0,
+                "ty":0
+            },
+            "color":COLORS.blue
+        },
+        "1x1":{
+            "chunk": 1,
+            "color":COLORS.blue,
+            "position":{
+                "tx":1,
+                "ty":1
+            }
+        },
+    },
+}
 
 var HeroView = require("<scripts>/views/HeroView")
 var WorldView = require("<scripts>/views/WorldView")
@@ -25,46 +220,47 @@ var FrameView = require("<scripts>/views/FrameView")
 var EditorCursorView = require("<scripts>/views/EditorCursorView")
 var CameraView = require("<scripts>/views/CameraView")
 
-var game = {
+class Point {
+    constructor(protopoint) {
+        this.x = protopoint.x || protopoint.tx * TILE || 0
+        this.y = protopoint.y || protopoint.ty * TILE || 0
+    }
+    get tx() {
+        return Math.floor(this.x / TILE)
+    }
+    get ty() {
+        return Math.floor(this.y / TILE)
+    }
+    set tx(tx) {
+        this.x = tx * TILE
+    }
+    set ty(ty) {
+        this.y = ty * TILE
+    }
+    get string() {
+        return this.x + "x" + this.y
+    }
+    get tstring() {
+        return this.tx + "x" + this.ty
+    }
+}
+
+class Hero {
+    constructor() {
+        this.height = 8
+        this.width = 8
+        this.position = new Point({x: 14, y: 14})
+    }
+    get chunk() {
+        var tile = game.world.tiles[this.position.tstring]
+        return !!tile ? tile.chunk : undefined
+    }
+}
+
+window.game = {
     "mode": "play",
-    "world": {
-        "tiles": {
-            "0x0": {
-                "color": "#B97A57",
-                "position": {"tx": 0, "ty": 0},
-            },
-            "1x1": {
-                "color": "#B97A57",
-                "position": {"tx": 1, "ty": 1},
-            },
-            "4x4": {
-                "color": "#B97A57",
-                "position": {"tx": 4, "ty": 4},
-            },
-            "6x6": {
-                "color": "#B97A57",
-                "position": {"tx": 6, "ty": 6},
-            },
-        },
-        "chunks": {
-            "0x0": {
-                "rendered": Date.now(),
-                "position": {"x": 0, "y": 0},
-            },
-            "-1x0": {
-                "rendered": Date.now(),
-                "position": {"x": -1, "y": 0},
-            },
-        },
-    },
-    "hero": {
-        "width": 8,
-        "height": 8,
-        "position": {
-            "x": 16,
-            "y": 16,
-        },
-    },
+    "world": WORLD,
+    "hero": new Hero(),
     "editor": {
         "cursor": {
             "scale": 1,
@@ -82,26 +278,14 @@ var game = {
 
 var GameView = React.createClass({
     render: function() {
-        if(game.mode == "play") {
-            return (
-                <FrameView aspect-ratio={WIDTH + "x" + HEIGHT}>
-                    <CameraView entity={game.hero}>
-                        <WorldView world={game.world}/>
-                        <HeroView entity={game.hero}/>
-                    </CameraView>
-                </FrameView>
-            )
-        } else if(game.mode == "edit") {
-            return (
-                <FrameView aspect-ratio={WIDTH + "x" + HEIGHT}>
-                    <CameraView entity={game.hero}>
-                        <WorldView world={game.world}/>
-                        <HeroView entity={game.hero}/>
-                        <EditorCursorView entity={game.editor.cursor}/>
-                    </CameraView>
-                </FrameView>
-            )
-        }
+        return (
+            <FrameView aspect-ratio={WIDTH + "x" + HEIGHT}>
+                <CameraView entity={game.hero}>
+                    <WorldChunkView cx={0} cy={0} rendered={"hello"}/>
+                    <HeroView entity={game.hero}/>
+                </CameraView>
+            </FrameView>
+        )
     },
     componentDidMount: function() {
         Loop(function(tick) {

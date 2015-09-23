@@ -14,6 +14,7 @@ var browserify = require("browserify")
 var reactify = require("reactify")
 var envify = require("envify/custom")
 var aliasify = require("aliasify")
+var babelify = require("babelify")
 
 var chalk = require("chalk")
 var yargs = require("yargs")
@@ -23,9 +24,7 @@ var vinyl_source = require("vinyl-source-stream")
 browserify = browserify(watchify.args)
     .add("./source/index.js")
     .transform("reactify")
-    .transform(envify({
-        devmode: yargs.argv.devmode
-    }))
+    .transform(babelify)
     .transform(aliasify.configure({
         configDir: __dirname,
         aliases: {
