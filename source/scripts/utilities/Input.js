@@ -45,6 +45,9 @@ var Input = {
 }
 
 document.addEventListener("keydown", function(event) {
+    if(vkey[event.keyCode] == "<tab>") {
+        event.preventDefault()
+    }
     if(Input.isUp(vkey[event.keyCode])) {
         Input.setDown(vkey[event.keyCode])
     }

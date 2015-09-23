@@ -105,7 +105,7 @@ var GameView = React.createClass({
     },
     componentDidMount: function() {
         Loop(function(tick) {
-            if(Input.isJustDown("I")) {
+            if(Input.isJustDown("<tab>")) {
                 if(game.mode == "play") {
                     game.mode = "edit"
                     // todo: do not reposition the cursor if it is already on the screen
